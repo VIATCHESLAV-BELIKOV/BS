@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.SocketException;
 import java.util.ArrayList;
 //import javax.swing.*;
 
@@ -15,18 +16,21 @@ public class MainFrame extends JFrame {
     private JMenuBar MenuBar;
     private JMenu MenuFile, MenuShip, MenuConnect;
     private JLabel StatusBar;
-    private JSplitPane SplitPane;
+    private bsSplitPane SplitPaneV;
+    private viewSplitPaneH SplitPaneH;
     private bsBoard bsLeft, bsRight;
+    private viewBSChatPanel bsChat;
+    private viewBSSettingsPanel bsSets;
 
     private bsImages bsImgs;
 
-    public MainFrame() {
+    public MainFrame() throws SocketException {
 
         InitUIFrame();
 
     }
 
-    private void InitUIFrame() {
+    private void InitUIFrame() throws SocketException {
 
         // загрузить изображения клеток
         bsImgs = new bsImages();
@@ -48,15 +52,13 @@ public class MainFrame extends JFrame {
         StatusBar.setBorder(BorderFactory.createEtchedBorder());
 
         // левая панель (игрок)
-        bsLeft = new bsBoard();
-        bsLeft.SetImages(bsImgs);
-
-        //bsLeft.setPreferredSize( new Dimension(150,150) );
-        //bsLeft.setMinimumSize ( new Dimension(150,150) );
-        //bsLeft.setMaximumSize( new Dimension(150,150) );
+        bsLeft = new bsBoard(bsImgs);
         // правая панель (противник)
-        bsRight = new bsBoard();
-        bsRight.SetImages(bsImgs);
+        bsRight = new bsBoard(bsImgs);
+        bsChat = new viewBSChatPanel();
+        bsChat.Init();
+        bsSets = new viewBSSettingsPanel();
+        bsSets.Init();
 
     //    bsLeft.setPreferredSize(new Dimension(200, 40));
     //    bsRight.setPreferredSize(new Dimension(200, 400));
@@ -64,13 +66,29 @@ public class MainFrame extends JFrame {
        // bsRight.setPreferredSize( new Dimension(200,150) );
        // bsRight.setMinimumSize ( new Dimension(200,150) );
         // сплит-панель
-        bsSplitPane SplitPane = new bsSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        SplitPane.setContinuousLayout(true);
-        SplitPane.setOneTouchExpandable(true);
-        SplitPane.setLeftComponent(bsLeft);
-        SplitPane.setRightComponent(bsRight);
-        SplitPane.setResizeWeight(1.0);
-        SplitPane.setDividerLocation(338);
+
+        SplitPaneV = new bsSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        SplitPaneH = new viewSplitPaneH(JSplitPane.VERTICAL_SPLIT);
+
+   //     SplitPaneH.setContinuousLayout(true);
+   //     SplitPaneH.setContinuousLayout(true);
+    //    SplitPaneH.setOneTouchExpandable(true);
+
+        SplitPaneV.setContinuousLayout(true);
+        SplitPaneV.setOneTouchExpandable(true);
+        SplitPaneV.setLeftComponent(bsLeft);
+//        SplitPaneV.setRightComponent(bsRight);
+        SplitPaneV.setRightComponent(bsSets);
+        SplitPaneV.setResizeWeight(1.0);
+        SplitPaneV.setDividerLocation(338);
+
+        SplitPaneH.setLeftComponent(SplitPaneV);
+//        SplitPaneH.setLeftComponent(bsSets);
+        SplitPaneH.setRightComponent(bsChat);
+
+        SplitPaneH.setResizeWeight(1.0);
+        SplitPaneH.setDividerLocation(335);
+
       //  SplitPane.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 
    //     SplitPane.setEnabled(false);
@@ -96,7 +114,7 @@ public class MainFrame extends JFrame {
 
         // Main Frame init
         this.setTitle("Морской бой");
-        this.setSize(696, 420 );
+        this.setSize(696, /*420*/ 560 );
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -104,7 +122,7 @@ public class MainFrame extends JFrame {
         this.add(StatusBar, BorderLayout.SOUTH);
      //   Container contentPane = this.getContentPane();
 
-        this.getContentPane().add(SplitPane, BorderLayout.CENTER);
+        this.getContentPane().add(SplitPaneH, BorderLayout.CENTER);
       //  System.out.println("size: " + contentPane.getSize().toString());
 
     }
@@ -113,7 +131,12 @@ public class MainFrame extends JFrame {
 
         EventQueue.invokeLater(() -> {
 
-            var ex = new MainFrame();
+            MainFrame ex = null;
+            try {
+                ex = new MainFrame();
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
             ex.setVisible(true);
         });
     }
