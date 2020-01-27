@@ -54,13 +54,14 @@ public class modNetwork extends  Thread {
                 sErrMsg += "CloseConnect : clientSocket - " + e.getMessage() + "\n";
             }
         }
-        try {
+     /*   try {
+System.out.println( "wait thread" );
             this.join();
         } catch (InterruptedException e) {
             sErrMsg += "CloseConnect : Join - " + e.getMessage() + "\n";
-        }
+        }*/
         pThread = null;
-        System.out.println( sErrMsg );
+        System.out.println( "CloseConnection (" + sErrMsg + ")" );
     }
 
     public boolean OpenConnect( boolean bSrv, String sIP, String sPort ) {
@@ -75,10 +76,19 @@ public class modNetwork extends  Thread {
             sErrMsg += "OpenConnect : " + e.getMessage() + "\n";
             ret = false;
         }
-        System.out.print( sErrMsg );
+//System.out.print( sErrMsg );
+        if ( ret && !bServer ){
+            try {
+                clientSocket = new Socket( ipAddress, ipPort );
+            } catch ( Exception e ) {
+                sErrMsg += "OpenConnect as Client : " + e.getMessage() + "\n";
+                clientSocket = null;
+                ret = false;
+            }
+        }
         if  ( ret  ) {
 // create connect thread
-            pThread = new Thread("Connect"){
+            pThread = new Thread("Connect" ){
                 @Override
                 public void run(){
 // *********************************************
@@ -92,8 +102,6 @@ public class modNetwork extends  Thread {
                             serverSocket.close();
                             serverSocket = null;
                         }
-                        else
-                            clientSocket = new Socket( ipAddress, ipPort );
                         try {
                             outStream = new ObjectOutputStream( clientSocket.getOutputStream() );
                             inStream = new ObjectInputStream( clientSocket.getInputStream() );
@@ -147,19 +155,25 @@ public class modNetwork extends  Thread {
                         }
                     }
 // *********************************************
+                    System.out.println("Thread finished:\n" + sErrMsg);
                 }
             };
 // create connect thread
             pThread.start();
 System.out.println("Thread started");
         }
+        else {
+System.out.println( sErrMsg );
+        }
         return ret;
     }
 
     public void sendMsg( String s ) {
         try {
-            outStream.writeObject(s);
-            outStream.flush();
+            if ( outStream != null ) {
+                outStream.writeObject(s);
+                outStream.flush();
+            }
         } catch ( IOException e ) {
 System.out.println( "Send Message Exception : " + e.getMessage() + "\n" );
         }

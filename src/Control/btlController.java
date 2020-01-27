@@ -238,9 +238,7 @@ public class btlController {
                     dlg.AddElement("     порт :", mView.getDialogConnPort() );
                     sArrList.clear();
                     sArrList = dlg.run();
-                    if ( sArrList.size() == 2 ) {
-                        mNetwork.OpenConnect( true, sArrList.get(0), sArrList.get(1) );
- System.out.println("socket opened?");
+                    if  ( ( sArrList.size() == 2 ) &&  mNetwork.OpenConnect( true, sArrList.get(0), sArrList.get(1) ) ) {
                         mView.getMenuServer().setEnabled( false );
                         mView.getMenuClient().setEnabled( false );
                         mView.getMenuDisconnect().setEnabled( true );
@@ -255,13 +253,15 @@ public class btlController {
                 dlg.AddElement("IP сервера :",mView.getDialogDialogClientIP() );
                 dlg.AddElement("     порт  :", mView.getDialogConnPort() );
                 ArrayList<String> sArrList = dlg.run();
-                if ( sArrList.size() == 2 ) {
-                    mNetwork.OpenConnect( false, sArrList.get(0), sArrList.get(1) );
- //System.out.println("socket opened?");
-                    mView.getMenuServer().setEnabled( false );
-                    mView.getMenuClient().setEnabled( false );
-                    mView.getMenuDisconnect().setEnabled( true );
-                }
+                if (  sArrList.size() == 2 )
+                    if ( mNetwork.OpenConnect( false, sArrList.get(0), sArrList.get(1) ) ) {
+                        mView.getMenuServer().setEnabled(false);
+                        mView.getMenuClient().setEnabled(false);
+                        mView.getMenuDisconnect().setEnabled(true);
+                    } else {
+                        JOptionPane.showMessageDialog( mView.getPanelRightMap(), "Не найден сервер."  );
+                    }
+
             }
         });
         mView.getMenuDisconnect().addActionListener( new ActionListener() {
